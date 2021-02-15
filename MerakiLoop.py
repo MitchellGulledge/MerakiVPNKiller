@@ -13,7 +13,7 @@ import sys
 class MerakiConfig:
     api_key = ''
     org_name = ''
-    tag_prefix = ''
+    tag_prefix = 'SIG-'
     org_id = None
     # enter amount of additional tunnels to add
     print("enter amount of additional tunnels to add")
@@ -36,7 +36,7 @@ def get_meraki_ipsec_config(name, public_ip) -> dict:
     ipsec_config = {
         "name": name,
         "publicIp": public_ip,
-        "privateSubnets": ["0.0.0.0/0"],
+        "privateSubnets": ["2.2.2.2/32"],
         "secret": "secret",
         "ikeVersion": "2",
         "ipsecPolicies": {
@@ -49,6 +49,10 @@ def get_meraki_ipsec_config(name, public_ip) -> dict:
             "childPfsGroup": ["group14"],
             "childLifetime": 3600
         },
+        "networkTags": [ 'none' ],
+        # entering in dummy fqdn value
+        "myUserFqdn": '64u3dbjeu3w-99e7-107-b2da-07fa949d73ce.v1@5217802-521538340-umbrella.com'
+
     }
     return ipsec_config
 
@@ -87,7 +91,7 @@ vpn_tunnel_name = ''
 # performing loop (80 times for now, just guessing)
 for vpn_config_count in range(int(MerakiConfig.tunnel_addition_amount)):
     # incrementing last bit of IP address by 1
-    public_ip = ipaddress.ip_address(meraki_vpn_config_public_ip) + 1
+    meraki_vpn_config_public_ip = ipaddress.ip_address(meraki_vpn_config_public_ip) + 1
     # calling function to generate random string
     vpn_tunnel_name = get_random_string(8)
     # calling function to create template vpn tunnel config 
@@ -100,3 +104,17 @@ print(original_list_of_meraki_tunnels)
 
 # calling function to update Meraki VPNs
 update_meraki_vpn(original_list_of_meraki_tunnels)
+
+
+
+# function to delete Meraki VPN config
+def delete_meraki_vpn():
+
+    vpn_list = []
+
+    updatemvpn = meraki_dashboard_sdk_auth.appliance.updateOrganizationApplianceVpnThirdPartyVPNPeers(
+    MerakiConfig.org_id, vpn_list
+    ) 
+
+# when you want to delete meraki vpn config uncomment the below to input blank list of third party config
+#delete_meraki_vpn()
